@@ -99,7 +99,7 @@ Along with the name of the state we have the two-letter abbreviation and we have
     What does each row in the dataset represent?
     What are the variables?
     
-***There are `r nrow(laquinta)` rows and `r ncol(laquinta)` and columns in the dataset. Each row represents the data for one La Quintas Inn. The variables are `r names(laquinta)`.***
+***There are `r nrow(laquinta)` rows and `r ncol(laquinta)` and columns in the dataset. Each row represents the data for one La Quinta's Inn. The variables are `r names(laquinta)`.***
 
 🧶 ✅ ⬆️ Knit, *commit, and push your changes to GitHub with an appropriate commit message. Make sure to commit and push all changed files so that your Git pane is cleared up afterwards.*
 
@@ -163,7 +163,7 @@ laquinta %>%
     You'll need to refer to your notes from Exercise 7 about which country the non-US locations are in.
     Here is some starter code to get you going:
 
-```{r eval = FALSE}
+```{r eval = TRUE}
 laquinta <- laquinta %>%
   mutate(country = case_when(
     state %in% state.abb     ~ "United States",
@@ -180,12 +180,27 @@ Going forward we will work with the data from the United States only.
 All Denny's locations are in the United States, so we don't need to worry about them.
 However we do need to filter the La Quinta dataset for locations in United States.
 
-```{r eval = FALSE}
+```{r eval = TRUE}
 laquinta <- laquinta %>%
   filter(country == "United States")
 ```
 
 9.  Which states have the most and fewest Denny's locations? What about La Quinta? Is this surprising? Why or why not?
+
+```{r}
+
+dennys %>%
+  group_by(state) %>%
+  count() %>%
+  arrange(n)
+
+laquinta %>%
+  group_by(state) %>%
+  count() %>%
+  arrange(n)
+```
+
+***Deleware (DE) has the fewest Denny's locations (only 1), while Calafornia (CA) has the most (403). Maine (ME) has the fewest La Quinta's locations (only 1), while Texas (TX) has the most (237). This is surprising because the amounts of Denny's and Laquintas are not the same or similar in these states. If "La Quinta" truly meant "next to Denny's," we would expect there to be similar amounts of each within the states with the fewest and most locations. For example, while California had 403 Denny's there were only 56 La Quinta's. However, the number of each tracks with population size in those states. Smaller in population, states (ME and DE) have less La Quinta's and Denny's than larger states (CA and TX).***
 
 Next, let's calculate which states have the most Denny's locations *per thousand square miles*.
 This requires *joining* information from the frequency tables you created in Exercise 8 with information from the `states` data frame.
@@ -205,6 +220,26 @@ Before you move on the the next question, run the code above and take a look at 
 In the next exercise you will need to build on this pipe.
 
 10. Which states have the most Denny's locations per thousand square miles? What about La Quinta?
+
+``` {r}
+dennys %>%
+  count(state) %>%
+  inner_join(states, by = c("state" = "abbreviation")) %>%
+  mutate(per_thousand = n/area*1000) %>%
+  arrange(desc(per_thousand))
+
+```
+
+``` {r}
+laquinta %>%
+  count(state) %>%
+  inner_join(states, by = c("state" = "abbreviation")) %>%
+  mutate(per_thousand = n/area*1000) %>%
+  arrange(desc(per_thousand))
+
+```
+
+***The District of Columbia (DC) has overwhelming the most Denny's (29.3) per thousand sqaure miles with Rhode Island (3.2) and California (2.5) coming after. Rhode Island (1.3) has the most ammount of La Quinta's per thousand square miles followed by Florida (1.1), Conneticut (1.1), and Maryland (1.0). However, they are all extremely close together in terms of the amounts of La Quinta's per thousand square miles.***
 
 Next, we put the two datasets together into a single data frame.
 However before we do so, we need to add an identifier variable.
@@ -239,9 +274,35 @@ You can also choose different themes to change the overall look of your plots, s
 11. Filter the data for observations in North Carolina only, and recreate the plot.
     You should also adjust the transparency of the points, by setting the `alpha` level, so that it's easier to see the overplotted ones.
     Visually, does Mitch Hedberg's joke appear to hold here?
+    
+```{r}
+dn_lq %>%
+  filter(state == "NC") %>%
+  ggplot(mapping = aes(x = longitude, y = latitude, color = establishment)) +
+  geom_point(alpha = 0.30)+
+  scale_color_brewer(palette = "Dark2") +
+  labs(title = "Denny's and La Quinta's Locations", subtitle = "in North Carolina", x = "Longitude", y = "Latitude", color = "Establishment") +
+  theme_minimal()
+
+```
+
+***No, visually for North Carolina the joke does not appear to hold. There are a few locations were they could be right next to each other like around latitude 35.25 and 35.75. However, for the most part, they appear to exist separately*** 
 
 12. Now filter the data for observations in Texas only, and recreate the plot, with an appropriate `alpha` level.
     Visually, does Mitch Hedberg's joke appear to hold here?
+
+```{r}
+dn_lq %>%
+  filter(state == "TX") %>%
+  ggplot(mapping = aes(x = longitude, y = latitude, color = establishment)) +
+  geom_point(alpha = 0.2)+
+  scale_color_brewer(palette = "Dark2") +
+  labs(title = "Denny's and La Quinta's Locations", subtitle = "in Texas", x = "Longitude", y = "Latitude", color = "Establishment") +
+  theme_minimal()
+
+```
+
+***Yes, visually for Texas the joke appears to hold. Most of the points appear to overlap or be directly next to another. While it is a bit difficult to see due to the amount of points, many of the Denny's locations appear "brown" due to the green and orange overlapping indicating that they could be right next to each other.*** 
 
 That's it for now!
 In the next lab we will take a more quantitative approach to answering these questions.
